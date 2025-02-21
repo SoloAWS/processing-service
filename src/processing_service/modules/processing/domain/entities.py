@@ -5,7 +5,7 @@ from ....seedwork.domain.entities import Entity
 from .value_objects import ProcessingMetadata, ProcessingResult, ProcessingStatus
 
 
-@dataclass
+@dataclass(kw_only=True)
 class ProcessingTask(Entity):
     metadata: ProcessingMetadata
     raw_data: bytes

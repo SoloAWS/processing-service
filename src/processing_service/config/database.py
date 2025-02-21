@@ -4,7 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 import os
 
 DATABASE_URL = os.getenv(
-    "DATABASE_URL", "postgresql+asyncpg://user:password@postgres:5432/processing_db"
+    "DATABASE_URL", "postgresql+asyncpg://user:password@localhost:5432/processing_db"
 )
 
 engine = create_async_engine(DATABASE_URL, echo=True)

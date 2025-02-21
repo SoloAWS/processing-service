@@ -1,9 +1,11 @@
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
     # Database settings
-    DATABASE_URL: str = "postgresql+asyncpg://user:password@postgres:5432/processing_db"
+    DATABASE_URL: str = (
+        "postgresql+asyncpg://user:password@localhost:5432/processing_db"
+    )
 
     # Pulsar settings
     PULSAR_HOST: str = "pulsar"
