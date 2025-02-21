@@ -1,0 +1,57 @@
+# docker-compose.yml
+version: "3.8"
+
+networks:
+  processing_network:
+    driver: bridge
+
+services:
+  # PostgreSQL
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: processing_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - processing_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d processing_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Pulsar
+  pulsar:
+    image: apachepulsar/pulsar:latest
+    ports:
+      - "6650:6650"
+      - "8080:8080"
+    networks:
+      - processing_network
+    command: bin/pulsar standalone
+
+  # Processing Service API
+  processing_api:
+    build:
+      context: .
+      dockerfile: processing.Dockerfile
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://user:password@postgres:5432/processing_db
+      - PULSAR_HOST=pulsar
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      pulsar:
+        condition: service_started
+    networks:
+      - processing_network
+
+volumes:
+  postgres_data:
