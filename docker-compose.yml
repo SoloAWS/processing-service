@@ -1,4 +1,3 @@
-# docker-compose.yml
 version: "3.8"
 
 networks:
@@ -34,6 +33,18 @@ services:
     networks:
       - processing_network
     command: bin/pulsar standalone
+
+  # Pulsar Express
+  pulsar-express:
+    image: bbonnin/pulsar-express:latest
+    ports:
+      - "3000:3000"
+    environment:
+      PE_CONNECTION_URL: "http://pulsar:8080"
+    depends_on:
+      - pulsar
+    networks:
+      - processing_network
 
 volumes:
   postgres_data:
