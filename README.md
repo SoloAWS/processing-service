@@ -4,6 +4,8 @@ A processing service implemented following Domain-Driven Design (DDD) principles
 
 ## Architecture
 
+![alt text](docs/image-3.png)
+
 The service follows a hexagonal architecture (ports and adapters) with the following key components:
 
 ### Domain Layer
