@@ -3,8 +3,8 @@ import uuid
 from sqlalchemy import Column, String, LargeBinary, DateTime, Integer, Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
-from ....domain.entities import ProcessingTask
-from ....domain.value_objects import (
+from ...domain.entities import ProcessingTask
+from ...domain.value_objects import (
     ProcessingMetadata,
     ProcessingResult,
     ImageType,
@@ -18,7 +18,7 @@ Base = declarative_base()
 class ProcessingTaskDTO(Base):
     __tablename__ = "processing_tasks"
 
-    id = Column(UUID(as_uuid=True), primary_key=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, server_default=None)
     image_type = Column(SQLEnum(ImageType))
     region = Column(String)
     priority = Column(Integer)
@@ -81,7 +81,7 @@ class SQLProcessingRepository:
         )
 
     def _entity_to_dto(self, entity: ProcessingTask) -> ProcessingTaskDTO:
-        return ProcessingTaskDTO(
+        dto = ProcessingTaskDTO(
             id=entity.id,
             image_type=entity.metadata.image_type,
             region=entity.metadata.region,
@@ -93,3 +93,4 @@ class SQLProcessingRepository:
             started_at=entity.started_at,
             completed_at=entity.completed_at,
         )
+        return dto

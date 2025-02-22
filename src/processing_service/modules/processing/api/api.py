@@ -1,6 +1,7 @@
 # src/processing_service/modules/processing/api/api.py
 from fastapi import FastAPI, Form, HTTPException, UploadFile, Depends
 from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 import uuid
 from ..application.commands.process_image import (
@@ -12,6 +13,8 @@ from ..application.queries.get_task_status import (
     GetTaskStatusHandler,
 )
 from ..domain.value_objects import ImageType
+from ....config.database import get_session
+from ..infrastructure.persistence.repositories import SQLProcessingRepository
 
 app = FastAPI(title="Processing Service")
 
@@ -35,16 +38,18 @@ class TaskStatusResponse(BaseModel):
     completed_at: Optional[str]
 
 
-# Dependency injection handlers
-async def get_command_handler() -> ProcessImageHandler:
-    # Here we would normally use a proper DI container
-    # For now, we'll create handler with mock dependencies
-    return ProcessImageHandler(repository=None)
+async def get_command_handler(
+    session: AsyncSession = Depends(get_session),
+) -> ProcessImageHandler:
+    repository = SQLProcessingRepository(lambda: session)
+    return ProcessImageHandler(repository=repository)
 
 
-async def get_query_handler() -> GetTaskStatusHandler:
-    # Here we would normally use a proper DI container
-    return GetTaskStatusHandler(repository=None)
+async def get_query_handler(
+    session: AsyncSession = Depends(get_session),
+) -> GetTaskStatusHandler:
+    repository = SQLProcessingRepository(lambda: session)
+    return GetTaskStatusHandler(repository=repository)
 
 
 @app.post("/process", response_model=ProcessingResponse)
