@@ -91,7 +91,7 @@ processing-service/
 ![alt text](docs/image-1.png)
 ![alt text](docs/image-2.png)
 
-# Start server locally
+# Start server locally (Optional)
 
 ```sh
 uvicorn src.processing_service.main:app --reload --host 0.0.0.0 --port 8000
