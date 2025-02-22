@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime
+import uuid
 from ..domain.events import ProcessingStarted, ProcessingCompleted, ProcessingFailed
 from ....seedwork.domain.entities import Entity
 from .value_objects import ProcessingMetadata, ProcessingResult, ProcessingStatus
@@ -24,6 +25,8 @@ class ProcessingTask(Entity):
         created_at=None,
         updated_at=None,
     ):
+        if id is None:
+            id = uuid.uuid4()
         super().__init__(id=id, created_at=created_at, updated_at=updated_at)
         self.metadata = metadata
         self.raw_data = raw_data

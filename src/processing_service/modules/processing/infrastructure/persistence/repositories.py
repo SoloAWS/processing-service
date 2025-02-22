@@ -2,7 +2,9 @@ from typing import List
 import uuid
 from sqlalchemy import Column, String, LargeBinary, DateTime, Integer, Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.ext.declarative import declarative_base
+
+from src.processing_service.config.database import Base
+
 from ...domain.entities import ProcessingTask
 from ...domain.value_objects import (
     ProcessingMetadata,
@@ -11,8 +13,6 @@ from ...domain.value_objects import (
     ProcessingStatus,
 )
 from datetime import datetime
-
-Base = declarative_base()
 
 
 class ProcessingTaskDTO(Base):
