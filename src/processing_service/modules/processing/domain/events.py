@@ -25,6 +25,7 @@ class ProcessingStarted(DomainEvent):
 class ProcessingCompleted(DomainEvent):
     task_id: uuid.UUID = field(default=None)
     result: ProcessingResult = field(default=None)
+    region: str = field(default=None)  # NEW FIELD
     id: uuid.UUID = field(default_factory=uuid.uuid4)
     timestamp: datetime = field(default_factory=datetime.now)
 
@@ -34,6 +35,7 @@ class ProcessingCompleted(DomainEvent):
             "task_id": str(self.task_id),
             "status": self.result.status.value,
             "message": self.result.message,
+            "region": self.region,
         }
 
 
@@ -41,6 +43,7 @@ class ProcessingCompleted(DomainEvent):
 class ProcessingFailed(DomainEvent):
     task_id: uuid.UUID = field(default=None)
     error_message: str = field(default=None)
+    region: str = field(default=None)  # NEW FIELD
     id: uuid.UUID = field(default_factory=uuid.uuid4)
     timestamp: datetime = field(default_factory=datetime.now)
 
@@ -49,4 +52,5 @@ class ProcessingFailed(DomainEvent):
             **super().to_dict(),
             "task_id": str(self.task_id),
             "error_message": self.error_message,
+            "region": self.region,
         }

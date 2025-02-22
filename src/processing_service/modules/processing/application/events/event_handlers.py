@@ -19,9 +19,15 @@ class PulsarEventHandler(EventHandler):
         if isinstance(
             event, (ProcessingStarted, ProcessingCompleted, ProcessingFailed)
         ):
-            region = event.metadata.region if hasattr(event, "metadata") else "unknown"
-            event_type = event.__class__.__name__
-            topic = self._get_topic_for_region(region, event_type)
+            if isinstance(event, ProcessingStarted):
+                region = event.metadata.region
+            else:
+                region = event.region
+
+            event_type_suffix = event.__class__.__name__.replace(
+                "Processing", ""
+            ).lower()
+            topic = self._get_topic_for_region(region, event_type_suffix)
 
             if topic not in self.producers:
                 self.producers[topic] = self.client.create_producer(topic)

@@ -13,7 +13,7 @@ XRAY
 --WebAppBoundary
 Content-Disposition: form-data; name="region"
 
-us-west
+latam
 --WebAppBoundary
 Content-Disposition: form-data; name="priority"
 
