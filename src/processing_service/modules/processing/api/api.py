@@ -1,5 +1,5 @@
 # src/processing_service/modules/processing/api/api.py
-from fastapi import FastAPI, HTTPException, UploadFile, Depends
+from fastapi import FastAPI, Form, HTTPException, UploadFile, Depends
 from pydantic import BaseModel
 from typing import Optional
 import uuid
@@ -49,29 +49,32 @@ async def get_query_handler() -> GetTaskStatusHandler:
 
 @app.post("/process", response_model=ProcessingResponse)
 async def process_image(
-    request: ProcessImageRequest,
-    file: UploadFile,
+    image_type: str = Form(...),
+    region: str = Form(...),
+    priority: Optional[int] = Form(0),
+    file: UploadFile = Form(...),
     command_handler: ProcessImageHandler = Depends(get_command_handler),
 ):
     try:
-        # Validate image type
-        if request.image_type not in ImageType.__members__:
+        # Validate image_type against allowed values
+        if image_type not in ImageType.__members__:
             raise HTTPException(
                 status_code=400,
                 detail=f"Invalid image type. Must be one of: {list(ImageType.__members__.keys())}",
             )
 
-        # Read file content
+        # Read the uploaded file content
         content = await file.read()
 
-        # Create and execute command
+        # Create the command with form data and file content
         command = ProcessImageCommand(
-            image_type=request.image_type,
-            region=request.region,
+            image_type=image_type,
+            region=region,
             raw_data=content,
-            priority=request.priority,
+            priority=priority,
         )
 
+        # Execute the command
         task_id = await command_handler.handle(command)
 
         return ProcessingResponse(task_id=str(task_id))
