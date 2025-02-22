@@ -46,5 +46,29 @@ services:
     networks:
       - processing_network
 
+  # FastAPI Processing Service
+  processing-api:
+    build:
+      context: .
+      dockerfile: processing.Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://user:password@postgres:5432/processing_db
+      PULSAR_HOST: pulsar
+      API_HOST: 0.0.0.0
+      API_PORT: 8000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      pulsar:
+        condition: service_started
+    networks:
+      - processing_network
+    volumes:
+      - ./src:/app/src
+    command: uvicorn src.processing_service.main:app --reload --host 0.0.0.0 --port 8000
+
 volumes:
   postgres_data:
+    driver: local
