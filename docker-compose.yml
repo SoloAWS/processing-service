@@ -35,23 +35,5 @@ services:
       - processing_network
     command: bin/pulsar standalone
 
-  # Processing Service API
-  # processing_api:
-  #   build:
-  #     context: .
-  #     dockerfile: processing.Dockerfile
-  #   environment:
-  #     - DATABASE_URL=postgresql+asyncpg://user:password@postgres:5432/processing_db
-  #     - PULSAR_HOST=pulsar
-  #   ports:
-  #     - "8000:8000"
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #     pulsar:
-  #       condition: service_started
-  #   networks:
-  #     - processing_network
-
 volumes:
   postgres_data:
