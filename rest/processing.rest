@@ -26,4 +26,4 @@ Content-Type: image/jpeg
 --WebAppBoundary--
 
 ### Get Task Status
-GET http://localhost:8000/task/{{processImage.response.body.task_id}}
+GET http://localhost:8000/processing/task/{{processImage.response.body.task_id}}
