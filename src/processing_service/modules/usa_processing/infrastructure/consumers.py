@@ -2,6 +2,8 @@ from pulsar import Client, Consumer, Message
 import json
 import logging
 
+logger = logging.getLogger()
+
 
 class UsaProcessingConsumer:
     def __init__(self, pulsar_host: str):
@@ -11,12 +13,12 @@ class UsaProcessingConsumer:
     def message_callback(self, consumer, message):
         try:
             data = json.loads(message.data().decode("utf-8"))
-            logging.info(
+            logger.info(
                 f"USA Processing received message on {consumer.topic()}: {data}"
             )
             consumer.acknowledge(message)
         except Exception as e:
-            logging.error(f"Error processing message from {consumer.topic()}: {str(e)}")
+            logger.error(f"Error processing message from {consumer.topic()}: {str(e)}")
 
     async def subscribe(self):
         topics = [
