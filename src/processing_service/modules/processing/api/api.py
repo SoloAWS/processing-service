@@ -1,9 +1,10 @@
-# src/processing_service/modules/processing/api/api.py
 from fastapi import FastAPI, Form, HTTPException, UploadFile, Depends
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 import uuid
+
+from ....config.settings import Settings
 from ..application.commands.process_image import (
     ProcessImageCommand,
     ProcessImageHandler,
@@ -15,8 +16,12 @@ from ..application.queries.get_task_status import (
 from ..domain.value_objects import ImageType
 from ....config.database import get_session
 from ..infrastructure.persistence.repositories import SQLProcessingRepository
+from ..application.events.event_handlers import PulsarEventHandler
 
 app = FastAPI(title="Processing Service")
+
+settings = Settings()
+PULSAR_HOST = settings.PULSAR_HOST
 
 
 class ProcessImageRequest(BaseModel):
@@ -41,8 +46,12 @@ class TaskStatusResponse(BaseModel):
 async def get_command_handler(
     session: AsyncSession = Depends(get_session),
 ) -> ProcessImageHandler:
+    settings = Settings()
     repository = SQLProcessingRepository(lambda: session)
-    return ProcessImageHandler(repository=repository)
+    event_handler = PulsarEventHandler(
+        pulsar_host=settings.PULSAR_HOST,
+    )
+    return ProcessImageHandler(repository=repository, event_handler=event_handler)
 
 
 async def get_query_handler(
@@ -61,17 +70,14 @@ async def process_image(
     command_handler: ProcessImageHandler = Depends(get_command_handler),
 ):
     try:
-        # Validate image_type against allowed values
         if image_type not in ImageType.__members__:
             raise HTTPException(
                 status_code=400,
                 detail=f"Invalid image type. Must be one of: {list(ImageType.__members__.keys())}",
             )
 
-        # Read the uploaded file content
         content = await file.read()
 
-        # Create the command with form data and file content
         command = ProcessImageCommand(
             image_type=image_type,
             region=region,
@@ -79,9 +85,7 @@ async def process_image(
             priority=priority,
         )
 
-        # Execute the command
         task_id = await command_handler.handle(command)
-
         return ProcessingResponse(task_id=str(task_id))
 
     except ValueError as e:

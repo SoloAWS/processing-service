@@ -36,12 +36,14 @@ class ProcessingTask(Entity):
 
     def start_processing(self):
         self.started_at = datetime.now()
-        return ProcessingStarted(self.id, self.metadata)
+        return ProcessingStarted(
+            task_id=self.id, metadata=self.metadata, timestamp=datetime.now()
+        )
 
     def complete_processing(self, result: ProcessingResult):
         self.completed_at = datetime.now()
         self.result = result
-        return ProcessingCompleted(self.id, result)
+        return ProcessingCompleted(task_id=self.id, result=result)
 
     def fail_processing(self, error_message: str):
         self.completed_at = datetime.now()

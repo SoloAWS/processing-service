@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     )
 
     # Pulsar settings
-    PULSAR_HOST: str = "pulsar"
+    PULSAR_HOST: str = "localhost"
     PULSAR_PORT: int = 6650
 
     # API settings
