@@ -2,6 +2,9 @@
 
 A processing service implemented following Domain-Driven Design (DDD) principles and event-driven architecture.
 
+## Repository
+[https://github.com/SoloAWS/processing-service](https://github.com/SoloAWS/processing-service)
+
 ## Video
 [https://youtu.be/G08C64144Ew](https://youtu.be/G08C64144Ew)
 
