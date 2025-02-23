@@ -2,6 +2,9 @@
 
 A processing service implemented following Domain-Driven Design (DDD) principles and event-driven architecture.
 
+## Video
+[https://youtu.be/G08C64144Ew](https://youtu.be/G08C64144Ew)
+
 ## Architecture
 
 ![alt text](docs/image-3.png)
