@@ -2,12 +2,12 @@ from dataclasses import dataclass, field
 from datetime import datetime
 import uuid
 from ..domain.events import ProcessingStarted, ProcessingCompleted, ProcessingFailed
-from ....seedwork.domain.entities import Entity
+from ....seedwork.domain.aggregate import AggregateRoot
 from .value_objects import ProcessingMetadata, ProcessingResult, ProcessingStatus
 
 
 @dataclass(kw_only=True)
-class ProcessingTask(Entity):
+class ProcessingTask(AggregateRoot):
     metadata: ProcessingMetadata
     raw_data: bytes
     result: ProcessingResult = field(default=None)
