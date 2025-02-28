@@ -17,9 +17,9 @@ app = FastAPI(title="Processing Service")
 # Mount the processing module
 app.mount("/processing", processing_app)
 
-# Initialize consumers and attach to app state
-app.state.latam_consumer = LatamProcessingConsumer(settings.PULSAR_HOST)
-app.state.usa_consumer = UsaProcessingConsumer(settings.PULSAR_HOST)
+# Initialize consumers with StreamNative Pulsar
+app.state.latam_consumer = LatamProcessingConsumer()
+app.state.usa_consumer = UsaProcessingConsumer()
 
 
 @app.on_event("startup")

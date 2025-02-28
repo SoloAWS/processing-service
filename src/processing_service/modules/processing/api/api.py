@@ -21,7 +21,6 @@ from ..application.events.event_handlers import PulsarEventHandler
 app = FastAPI(title="Processing Service")
 
 settings = Settings()
-PULSAR_HOST = settings.PULSAR_HOST
 
 
 class ProcessImageRequest(BaseModel):
@@ -48,9 +47,8 @@ async def get_command_handler(
 ) -> ProcessImageHandler:
     settings = Settings()
     repository = SQLProcessingRepository(lambda: session)
-    event_handler = PulsarEventHandler(
-        pulsar_host=settings.PULSAR_HOST,
-    )
+    # Initialize PulsarEventHandler without host parameter
+    event_handler = PulsarEventHandler()
     return ProcessImageHandler(repository=repository, event_handler=event_handler)
 
 
