@@ -14,6 +14,11 @@ settings = Settings()
 
 app = FastAPI(title="Processing Service")
 
+# Health check endpoint
+@app.get("/health")
+async def health_check():
+    return {"status": "ok"}
+
 # Mount the processing module
 app.mount("/processing", processing_app)
 
