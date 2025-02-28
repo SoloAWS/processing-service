@@ -1,6 +1,6 @@
 import logging
 from pydantic_settings import BaseSettings
-from typing import Dict
+from typing import Dict, ClassVar
 
 logging.basicConfig(
     level=logging.INFO,
@@ -18,14 +18,14 @@ class Settings(BaseSettings):
 
     # Topics - defined as constants instead of environment variables
     # USA Processing Topics
-    PROCESSING_USA_STARTED_TOPIC = "persistent://public/default/processing.usa.started"
-    PROCESSING_USA_COMPLETED_TOPIC = "persistent://public/default/processing.usa.completed"
-    PROCESSING_USA_FAILED_TOPIC = "persistent://public/default/processing.usa.failed"
+    PROCESSING_USA_STARTED_TOPIC: ClassVar[str] = "persistent://public/default/processing.usa.started"
+    PROCESSING_USA_COMPLETED_TOPIC: ClassVar[str] = "persistent://public/default/processing.usa.completed"
+    PROCESSING_USA_FAILED_TOPIC: ClassVar[str] = "persistent://public/default/processing.usa.failed"
     
     # LATAM Processing Topics
-    PROCESSING_LATAM_STARTED_TOPIC = "persistent://public/default/processing.latam.started"
-    PROCESSING_LATAM_COMPLETED_TOPIC = "persistent://public/default/processing.latam.completed"
-    PROCESSING_LATAM_FAILED_TOPIC = "persistent://public/default/processing.latam.failed"
+    PROCESSING_LATAM_STARTED_TOPIC: ClassVar[str] = "persistent://public/default/processing.latam.started"
+    PROCESSING_LATAM_COMPLETED_TOPIC: ClassVar[str] = "persistent://public/default/processing.latam.completed"
+    PROCESSING_LATAM_FAILED_TOPIC: ClassVar[str] = "persistent://public/default/processing.latam.failed"
 
     # Topic mappings for easy access
     @property
