@@ -9,6 +9,9 @@ from src.processing_service.modules.usa_processing.infrastructure.consumers impo
 from src.processing_service.modules.processing.api.api import app as processing_app
 from src.processing_service.config.database import init_models
 from src.processing_service.config.settings import Settings
+import newrelic.agent
+
+newrelic.agent.initialize()
 
 settings = Settings()
 
