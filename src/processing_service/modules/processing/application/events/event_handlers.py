@@ -2,17 +2,24 @@ from typing import Any
 from .....seedwork.application.events import EventHandler
 from .....seedwork.infrastructure.messaging import PulsarProducer
 from ...domain.events import ProcessingStarted, ProcessingCompleted, ProcessingFailed
+from ...infrastructure.messaging.schema_registry import event_schemas, event_to_schema_object
+from pulsar import Client, Authentication, AuthenticationToken
 import logging
 from .....config.settings import Settings
 
 logger = logging.getLogger(__name__)
 
 class PulsarEventHandler(EventHandler):
-    """Simplified event handler that publishes events to appropriate topics"""
+    """Event handler that publishes events to Pulsar with schema validation"""
     
     def __init__(self, pulsar_host: str = None):
         self.settings = Settings()
         self.producer = PulsarProducer()
+        # Create client for schema-enabled producers
+        self.client = Client(
+            self.settings.PULSAR_SERVICE_URL,
+            authentication=AuthenticationToken(self.settings.PULSAR_TOKEN)
+        )
         
     def _get_topic_name(self, region: str, event_type: str) -> str:
         """Get the fully qualified topic name from the event details"""
@@ -26,7 +33,7 @@ class PulsarEventHandler(EventHandler):
         )
     
     async def handle(self, event: Any):
-        """Handle the event by publishing it to the appropriate topic"""
+        """Handle the event by publishing it to the appropriate topic with schema validation"""
         if not isinstance(event, (ProcessingStarted, ProcessingCompleted, ProcessingFailed)):
             return
             
@@ -41,12 +48,25 @@ class PulsarEventHandler(EventHandler):
         
         # Send the event
         try:
-            self.producer.send_message(topic, event.to_dict())
-            logger.info(f"Event {event.__class__.__name__} published to {topic}")
+            # Get schema for this event type
+            schema = event_schemas.get(event_type)
+            
+            if schema:
+                schema_obj = event_to_schema_object(event)
+                producer = self.client.create_producer(topic, schema=schema)
+                producer.send(schema_obj)
+                producer.close()
+                
+                logger.info(f"Event {event.__class__.__name__} published to {topic} with schema validation")
+            else:
+                # Fall back to original implementation
+                self.producer.send_message(topic, event.to_dict())
+                logger.info(f"Event {event.__class__.__name__} published to {topic}")
         except Exception as e:
             logger.error(f"Failed to publish event to {topic}: {str(e)}")
             raise
     
     def close(self):
-        """Close the producer connection"""
+        """Close connections"""
         self.producer.close()
+        self.client.close()

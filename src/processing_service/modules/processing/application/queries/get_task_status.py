@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 import uuid
-from ...domain.repositories import ProcessingRepository
+from .....seedwork.application.unit_of_work import UnitOfWork
 from .....seedwork.application.queries import Query, QueryResult, QueryHandler
 from ...domain.entities import ProcessingTask
 
@@ -20,11 +20,13 @@ class TaskStatusDTO:
 
 
 class GetTaskStatusHandler(QueryHandler):
-    def __init__(self, repository: ProcessingRepository):
-        self.repository = repository
+    def __init__(self, unit_of_work: UnitOfWork):
+        self.unit_of_work = unit_of_work
 
     async def handle(self, query: GetTaskStatusQuery) -> QueryResult[TaskStatusDTO]:
-        task = await self.repository.get_by_id(query.task_id)
+        # For read-only operations, we don't need a transaction, but using the UoW
+        # ensures that we're using a consistent repository
+        task = await self.unit_of_work.processing_repository.get_by_id(query.task_id)
 
         if not task:
             return QueryResult(None)

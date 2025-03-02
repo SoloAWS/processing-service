@@ -31,33 +31,30 @@ class ProcessingTaskDTO(Base):
 
 
 class SQLProcessingRepository:
-    def __init__(self, session_factory):
-        self.session_factory = session_factory
+    def __init__(self, session):
+        self.session = session
 
     async def get_by_id(self, task_id: uuid.UUID) -> ProcessingTask:
-        async with self.session_factory() as session:
-            dto = await session.get(ProcessingTaskDTO, task_id)
-            if not dto:
-                return None
-            return self._dto_to_entity(dto)
+        dto = await self.session.get(ProcessingTaskDTO, task_id)
+        if not dto:
+            return None
+        return self._dto_to_entity(dto)
 
     async def save(self, task: ProcessingTask) -> None:
         dto = self._entity_to_dto(task)
-        async with self.session_factory() as session:
-            session.add(dto)
-            await session.commit()
+        self.session.add(dto)
+        # No commit here, the UnitOfWork handles transaction
 
     async def update(self, task: ProcessingTask) -> None:
         await self.save(task)
 
     async def get_pending_tasks(self) -> List[ProcessingTask]:
-        async with self.session_factory() as session:
-            query = (
-                await session.query(ProcessingTaskDTO)
-                .filter_by(status=ProcessingStatus.PENDING)
-                .order_by(ProcessingTaskDTO.priority.desc())
-            )
-            return [self._dto_to_entity(dto) for dto in query]
+        query = (
+            await self.session.query(ProcessingTaskDTO)
+            .filter_by(status=ProcessingStatus.PENDING)
+            .order_by(ProcessingTaskDTO.priority.desc())
+        )
+        return [self._dto_to_entity(dto) for dto in query]
 
     def _dto_to_entity(self, dto: ProcessingTaskDTO) -> ProcessingTask:
         metadata = ProcessingMetadata(

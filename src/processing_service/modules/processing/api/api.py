@@ -1,6 +1,5 @@
 from fastapi import FastAPI, Form, HTTPException, UploadFile, Depends
 from pydantic import BaseModel
-from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 import uuid
 
@@ -14,9 +13,9 @@ from ..application.queries.get_task_status import (
     GetTaskStatusHandler,
 )
 from ..domain.value_objects import ImageType
-from ....config.database import get_session
-from ..infrastructure.persistence.repositories import SQLProcessingRepository
+from ..infrastructure.persistence.unit_of_work_factory import get_unit_of_work
 from ..application.events.event_handlers import PulsarEventHandler
+from ....seedwork.application.unit_of_work import UnitOfWork
 
 app = FastAPI(title="Processing Service")
 
@@ -43,20 +42,17 @@ class TaskStatusResponse(BaseModel):
 
 
 async def get_command_handler(
-    session: AsyncSession = Depends(get_session),
+    unit_of_work: UnitOfWork = Depends(get_unit_of_work),
 ) -> ProcessImageHandler:
-    settings = Settings()
-    repository = SQLProcessingRepository(lambda: session)
     # Initialize PulsarEventHandler without host parameter
     event_handler = PulsarEventHandler()
-    return ProcessImageHandler(repository=repository, event_handler=event_handler)
+    return ProcessImageHandler(unit_of_work=unit_of_work, event_handler=event_handler)
 
 
 async def get_query_handler(
-    session: AsyncSession = Depends(get_session),
+    unit_of_work: UnitOfWork = Depends(get_unit_of_work),
 ) -> GetTaskStatusHandler:
-    repository = SQLProcessingRepository(lambda: session)
-    return GetTaskStatusHandler(repository=repository)
+    return GetTaskStatusHandler(unit_of_work=unit_of_work)
 
 
 @app.post("/process", response_model=ProcessingResponse)
