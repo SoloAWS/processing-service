@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from .....seedwork.application.commands import Command, CommandHandler
-from .....seedwork.application.unit_of_work import UnitOfWork
 from ...domain.entities import ProcessingTask
+from ...domain.repositories import ProcessingRepository
 from ...domain.value_objects import (
     ProcessingMetadata,
     ImageType,
@@ -22,9 +22,9 @@ class ProcessImageCommand(Command):
 
 class ProcessImageHandler(CommandHandler):
     def __init__(
-        self, unit_of_work: UnitOfWork, event_handler: PulsarEventHandler
+        self, repository: ProcessingRepository, event_handler: PulsarEventHandler
     ):
-        self.unit_of_work = unit_of_work
+        self.repository = repository
         self.event_handler = event_handler
 
     async def handle(self, command: ProcessImageCommand):
@@ -52,29 +52,17 @@ class ProcessImageHandler(CommandHandler):
             # Update task with result
             completed_event = task.complete_processing(result)
 
-            # Use Unit of Work to ensure atomicity
-            async with self.unit_of_work.transaction():
-                # Save to database using repository from unit of work
-                await self.unit_of_work.processing_repository.save(task)
-                # Emit ProcessingCompleted event
-                await self.event_handler.handle(completed_event)
+            # Save to database
+            await self.repository.save(task)
+
+            # Emit ProcessingCompleted event
+            await self.event_handler.handle(completed_event)
 
             return task.id
 
         except Exception as e:
             # Handle failure
             failed_event = task.fail_processing(str(e))
-            
-            # Even in case of application failure, we want to record that
-            # the task failed and emit the failure event
-            try:
-                async with self.unit_of_work.transaction():
-                    await self.unit_of_work.processing_repository.save(task)
-                    await self.event_handler.handle(failed_event)
-            except Exception:
-                # If the failure handling itself fails, just log and continue with the original exception
-                # In a real system, you'd want to log this
-                pass
-                
-            # Re-raise the original exception
+            await self.repository.save(task)
+            await self.event_handler.handle(failed_event)
             raise
