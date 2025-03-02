@@ -52,6 +52,5 @@ class ProcessingTask(AggregateRoot):
         self.result = ProcessingResult(
             status=ProcessingStatus.FAILED,
             message=error_message,
-            region=self.metadata.region,
         )
         return ProcessingFailed(self.id, error_message)
